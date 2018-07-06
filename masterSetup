@@ -1,0 +1,56 @@
+#include "FastLED.h"
+
+//initial defining of variables and GenInfo
+#define DATA_PIN    3
+#define LED_TYPE    WS2811
+#define COLOR_ORDER GRB
+#define NUM_LEDS    150
+CRGB leds[NUM_LEDS];
+
+#define BRIGHTNESS          96
+#define FRAMES_PER_SECOND  120
+
+// Defining buttons
+const int rainbowButton = 6;
+
+// Sets state LEDS
+int lightState = 0;
+
+void setup() {
+  delay(2000); // Recovery time
+
+  pinMode(rainbowButton, INPUT);
+  
+  // tell FastLED about the LED strip configuration
+  FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+
+  // set master brightness control
+  FastLED.setBrightness(BRIGHTNESS);
+}
+
+uint8_t gHue = 0; // rotating "base color" used by many of the patterns
+
+boolean rainbowState;
+
+void loop()
+{
+  rainbowState = digitalRead(rainbowButton);
+  
+   if (rainbowState)
+  {
+    lightState = 0;
+    FastLED.clear();
+  }
+
+  if (lightState == 0)
+  {
+    fill_rainbow( leds, NUM_LEDS, gHue, 7);
+  }
+
+  // send the 'leds' array out to the actual LED strip
+  FastLED.show();  
+  // insert a delay to keep the framerate modest
+  FastLED.delay(1000/FRAMES_PER_SECOND); 
+  
+  EVERY_N_MILLISECONDS( 20 ) { gHue++; } // slowly cycle the "base color" through the rainbow
+}
